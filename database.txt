@@ -1,0 +1,262 @@
+create database nsms;
+# the level of the student  "الفرقة"
+CREATE TABLE student_level (
+  level_name varchar(500) NOT NULL,
+  month_cost double DEFAULT NULL,
+  max_number int(11) DEFAULT NULL,
+  PRIMARY KEY (level_name)
+);
+
+# the student table	"الطالب"
+CREATE TABLE student (
+  student_code int(11) NOT NULL,
+  student_name varchar(100) NOT NULL,
+  student_phone int(11) DEFAULT NULL,
+  student_address varchar(500) DEFAULT NULL,
+  parent_name varchar(100) DEFAULT NULL,
+  parent_phone int(11) NOT NULL,
+  parent_job varchar(100) DEFAULT NULL,
+  relativity varchar(100) DEFAULT NULL,
+  level_name varchar(100) NOT NULL,
+  date varchar(100) DEFAULT NULL,
+  student_status varchar(100) DEFAULT NULL,
+  stop_date varchar(100) DEFAULT NULL,
+  FOREIGN KEY (level_name) REFERENCES student_level (level_name) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (level_name,student_code)
+); 
+
+# the group of the student "المجموعات"
+CREATE TABLE student_group (
+  group_name varchar(100) NOT NULL,
+  maxNumber varchar(500) DEFAULT NULL,
+  group_time varchar(100) DEFAULT NULL,
+  level_name varchar(100) NOT NULL,
+  FOREIGN KEY (level_name) REFERENCES student_level (level_name) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (level_name,group_name)
+);
+
+#the book of the student "المذكرات"
+CREATE TABLE student_book (
+  book_name varchar(100) NOT NULL,
+  maxNumber varchar(500) NOT NULL,
+  book_cost double NOT NULL,
+  level_name varchar(100) NOT NULL,
+  sold int(11) DEFAULT NULL,
+    FOREIGN KEY (level_name) REFERENCES student_level (level_name) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (level_name,book_name)
+);
+
+# student notes "الملاحظات"
+CREATE TABLE student_notes (
+  student_code int(11) NOT NULL,
+  level_name varchar(100) NOT NULL,
+  notes varchar(1000) DEFAULT NULL,
+  student_name varchar(100) DEFAULT NULL,
+  written_by varchar(100) DEFAULT NULL,
+  written_date varchar(100) DEFAULT NULL,
+  KEY level_name (level_name,student_code),
+  FOREIGN KEY (level_name, student_code) REFERENCES student (level_name, `student_code`) on delete cascade on update cascade
+);
+
+# the external money table "المصاريف الخارجه" 
+CREATE TABLE external_money (
+  person_name varchar(100) DEFAULT NULL,
+  reason varchar(1000) DEFAULT NULL,
+  money int(11) DEFAULT NULL,
+  paid_date varchar(100) DEFAULT NULL,
+  month varchar(100) DEFAULT NULL
+);
+
+# the path of the automatic backup
+ CREATE TABLE path (
+  path varchar(255) DEFAULT NULL
+);
+
+# the connectoin between book and student and level "دفع المذكرات"
+CREATE TABLE pay_for_book (
+  student_code int(11) NOT NULL,
+  level_name varchar(100) NOT NULL,
+  book_name varchar(100) NOT NULL,
+  student_name varchar(100) DEFAULT NULL,
+  amount_paid int(11) DEFAULT NULL,
+  discount int(11) DEFAULT NULL,
+  rest int(11) DEFAULT NULL,
+  paid_date varchar(100) DEFAULT NULL,
+  paid_time varchar(100) DEFAULT NULL,
+  recieve varchar(100),
+  FOREIGN KEY (level_name, student_code) REFERENCES student (level_name, student_code) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (level_name,student_code,book_name)
+);
+
+# the connectoin between month and student and level "دفع المصاريف الشهرية"
+CREATE TABLE pay_for_month (
+  student_code int(11) NOT NULL,
+  level_name varchar(100) NOT NULL,
+  month_name varchar(100) NOT NULL,
+  student_name varchar(100) DEFAULT NULL,
+  amount_paid int(11) DEFAULT NULL,
+  discount int(11) DEFAULT NULL,
+  rest int(11) DEFAULT NULL,
+  paid_date varchar(100) DEFAULT NULL,
+  paid_time varchar(100) DEFAULT NULL,
+  FOREIGN KEY (level_name, student_code) REFERENCES student (level_name, student_code) ON DELETE CASCADE ON UPDATE CASCADE,
+  PRIMARY KEY (level_name,student_code,month_name)
+);
+
+#the connection between student and group and level "اضافة مجموعات للطالب"
+CREATE TABLE student_group_connection (
+	student_code int(11) NOT NULL,
+	group_name varchar(100) NOT NULL,
+	level_name varchar(100) NOT NULL,
+	FOREIGN KEY (level_name) REFERENCES student_level (level_name) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (level_name, student_code) REFERENCES student (level_name, student_code) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (level_name, group_name) REFERENCES student_group (level_name, group_name) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY level_name_2 (level_name,student_code,group_name)
+); 
+
+
+# the footer of the report
+create table footer(footer varchar(255));
+
+
+# the class table "الحصة"
+create table class(
+class_number int,
+level_name varchar(100) not null,
+start_date varchar(100),
+end_date varchar(100),
+foreign key (level_name) references student_level(level_name) on delete cascade on update cascade,
+primary key (level_name,class_number)
+);
+
+#the connection between student and class respond to level
+create table student_class_connection(
+level_name varchar(100),
+class_number int not null,
+student_code int not null,
+student_name varchar(255),
+group_name varchar(100) not null,
+student_status varchar(100),
+attendance_date varchar(100),
+attendance_time varchar(100),
+foreign key (level_name,group_name) references student_group (level_name,group_name)on delete cascade on update cascade,
+foreign key(level_name,student_code) references student(level_name,student_code)on delete cascade on update cascade,
+foreign key(level_name, class_number) references class (level_name, class_number)on delete cascade on update cascade,
+primary key(level_name,group_name,class_number,student_code)
+);
+
+
+create table quiz(
+quiz_code int,
+level_name varchar(100),
+quiz_name varchar(100),
+quiz_degree double,
+quiz_date varchar(100),
+foreign key (level_name) references student_level(level_name) on delete cascade on update cascade,
+primary key (level_name,quiz_code)
+);
+
+create table student_quiz_connection (
+quiz_code int not null,
+level_name varchar(100) not null,
+student_code int not null,
+quiz_name varchar(255),
+student_name varchar(100),
+quiz_degree double,
+student_degree double,
+date varchar(100),
+time varchar(100),
+foreign key (level_name, student_code) references student(level_name,student_code) on delete cascade on update cascade,
+foreign key (level_name, quiz_code) references quiz(level_name, quiz_code) on delete cascade on update cascade,
+primary key (level_name,quiz_code,student_code)
+);
+
+
+create table exam(
+exam_code int,
+level_name varchar(100),
+exam_name varchar(100),
+exam_degree double,
+exam_date varchar(100),
+foreign key (level_name) references student_level(level_name) on delete cascade on update cascade,
+primary key (level_name,exam_code)
+);
+
+create table student_exam_connection (
+exam_code int not null,
+level_name varchar(100) not null,
+student_code int not null,
+exam_name varchar(255),
+student_name varchar(100),
+exam_degree double,
+student_degree double,
+date varchar(100),
+time varchar(100),
+foreign key (level_name, student_code) references student(level_name,student_code) on delete cascade on update cascade,
+foreign key (level_name, exam_code) references exam(level_name, exam_code) on delete cascade on update cascade,
+primary key (level_name,exam_code,student_code)
+); 
+
+# this table will hold the data about who enter the app 
+create table holder(
+user_code varchar(100),
+user_name varchar(255),
+user_password varchar(255)
+);
+# the table of "السكرتير"
+create table secretary (
+secretary_code varchar(100),
+secretary_name varchar(255),
+secretary_password varchar(255),
+primary key(secretary_code)
+);
+
+create table sortAll(student_code int,student_name varchar(255),
+attendance_number int, 
+attendance_ratio double,
+studentQuizDegree double,
+quiz_degree_ratio double,
+student_exam_degree double,
+exam_degree_ratio double,
+total_ratio double
+);
+
+#here some data that must be initialized
+Insert into footer value("مع تحياتي");
+Insert into holder values("x","x","x");
+Insert into path value(" ");
+
+
+
+#database belong to admin
+create database adminnsms;
+
+# the table of "المعلم"
+create table admin (
+admin_code varchar(100),
+admin_name varchar(255),
+admin_password varchar(255),
+primary key(admin_code)
+);
+
+#record every thing the secretary do"مراقبة النظام"
+create table system_monitoring(
+secretary_code varchar(255) ,
+secretary_name varchar(255),
+event_kind varchar(255),
+event_name varchar(255),
+theEvent varchar(1000),
+event_date varchar(255),
+event_time varchar(255)
+);
+
+#record the delete code of the admin "كود الحذف"
+create table adminPermision(accept_code varchar(255));
+
+# this table will control when the program will stop
+create table expired_date(start_date date,end_date date);
+
+# here is some data that must be initialized
+Insert into admin values("admin","admin","admin");
+Insert into adminPermision value("1");
+insert into expired_date value("2019-08-1","2020-08-1");
